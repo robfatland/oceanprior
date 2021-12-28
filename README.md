@@ -34,6 +34,28 @@ intervallic ('with pauses') profiles that accommodate equilibration of a pH sens
 
 
 
+## Structure of this Repository
+
+- Overview: This **`README.md`** markdown file
+- Primary BioOptics narrative: **`BioOptics.ipynb`** Jupyter notebook
+- Subdirectories
+    - **`Images`** are images from the project organized into categories
+    - **`RepositoryData`** contains (smaller-sized) datasets
+        - Contrasted with an external **`../data`** directory for larger datasets
+    - **`Profiles`** contains metadata on the timing of shallow profiler ascent/descent/rest intervals
+    - **`binder`** contains information on building sandbox versions of this repository using the [**binder**](https://mybinder.org) service
+
+
+## Additional Notes
+
+
+### Python and related libraries
+
+
+The Jupyter notebooks in this repository include Python 3 code and refer to a set of common geospatial analysis libraries. These include
+`dask`, `XArray`, `pandas`, `matplotlib`, and `numpy`. Timing is managed using the (**numpy**) datatime64 utility.
+
+
 
 ### How to create the binder feature for a GitHub repository
 
