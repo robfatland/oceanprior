@@ -33,7 +33,7 @@ water column nine times per day. These nine excursions include two
 intervallic ('with pauses') profiles that accommodate equilibration of a pH sensor. 
 
 
-<img src="https://github.com/robfatland/ocean/blob/main/Images/rca/shallow%20profiler%20platform%202%20OSB%20pool.png" alt="drawing" width="350"/>
+<img src="https://github.com/robfatland/ocean/blob/main/Images/rca/shallow%20profiler%20platform%202%20OSB%20pool.png" alt="drawing" width="500"/>
 
 
 
