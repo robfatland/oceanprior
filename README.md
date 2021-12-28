@@ -1,63 +1,51 @@
 # Introduction to the **ocean** GitHub repository
 
-This [repo](https://github.com/robfatland/ocean) is a collection of Python Jupyter notebooks and some supporting datasets. 
-The objective is to create a learning resource for expanding on sensor data visualizations
-and to 'lean in' to a synoptic view that combines or compares with data from other sources.
+This [repo](https://github.com/robfatland/ocean) is a collection of Python Jupyter notebooks with supporting data. 
+It is a learning resource for expanding on sensor data visualization in oceanography. As such there are two
+driving emphases: Good dataset construction, and comparison of data from different types of sensors.
+The latter is referred to herein as a 'synoptic view' of the water column.
+
+
+Click the following link -- it may take a few minutes to initialize -- to create a *'binder'* sandbox version
+of this repository. Once the temporary copy becomes available in your browser, double-click
+the available **BioOptics** Jupyter notebook. Additional work resides in the **`Notebooks`** sub-folder.
+You may experiment as you like with the binder instance: It is temporary.
 
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/robfatland/ocean/HEAD)
 
 
-This synoptic ocean data repository is centered on the Shallow Profilers of the
-Regional Cabled Array within the Oceans Observing Initiative. The data extend to 
-ARGO floats, remote sensing sea surface data and GLODAP. 
+The work here centers on **shallow profilers** located in the
+[Regional Cabled Array (RCA)](https://interactiveoceans.washington.edu); 
+in turn a large component of NSF's Ocean Observatories Initiative (OOI). 
+Additional datasets are featured that originate in other programs 
+([RCA cruise data](https://alfresco.oceanobservatories.org/), 
+ARGO, 
+MODIS and so on).
 
 
-Clicking the binder link above creates a sandbox instance of this Jupyter notebook collection. 
-Each notebook indicates whether it "runs" (executes Python code in a meaningful way) in binder.
-However even when this is not the case: The static cotent may still be of interest (plots of 
-data and so forth). 
-
-
-The data time range centers on January 2019 in order to keep the datasets small; so that they may
-in turn be included in the GitHub repository within data volume limits. Examples of datasets too
-large to fit include spectrophotometers, hydrophones, ADCP, GLODAP and optical instruments.
-
-
-The core data are collected in the photic zone by a "shallow profiler" that cycles through the 
-upper 200 meters of the water column nine times per day. These nine excursions include two 
-intervallic ('with pauses') profiles that accommodate equilibration of the pH sensor. 
-
-
-### Purpose
-
-This repository illustrates ocean data science. The code is Python broken up as topic
-notebooks. Data courtesy of 
-[OOI Regional Cabled Array](https://interactiveoceans.washington.edu), NASA, ARGO and other research programs.
-To explore: Click on the binder badge above to launch a sandbox copy.
-Typical start time will be about 3 minutes. Once binder
-finishes try running the first notebook, ***Ocean 01 A Photic Zone***.
-When you are done just close the browser tab and the sandbox will evaporate.
+An RCA shallow profiler rests at a depth of 200 meters below the surface and transits the upper 
+water column nine times per day. These nine excursions include two 
+intervallic ('with pauses') profiles that accommodate equilibration of a pH sensor. 
 
 
 
 
-### How was this repository binder-ized?
+### How to create the binder feature for a GitHub repository
 
-Three steps
 
-- Reduce the source data for the demo notebook down to a few MB so it "lives" in the repo folder
-- Add the subfolder `binder` and the `environment.yml` file given below
-- Add the binder badge linking to this repo
+- Reduce the source data to a few Megabytes so it can reside in the repository
+- Add a subfolder `binder` and an `environment.yml` file as shown given below
+- Add a binder badge linking to this repo
 
-Badge code: 
+Binder link: 
 
 ```
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/robfatland/ocean/HEAD)
 ```
 
 
-`binder/environment.yml` file: 
+Within the `binder` folder the `environment.yml` file reflects necessary libraries / packages: 
 
 
 ```
@@ -74,7 +62,7 @@ dependencies:
 ```
 
 
-### Other notes on configuration
+### Configuration notes
 
-* On my PC running an Ubuntu `ssh` shell I was obliged to run `conda install dask`.
+* One may be obliged to `conda install dask`
 
