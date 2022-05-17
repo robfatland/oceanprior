@@ -1,0 +1,118 @@
+# Concerning the names of data variables
+# Some engineering elements of OOI result in complex names. This commented-out code fragment demonstrates
+#   opening a NetCDF file as an XArray Dataset and renaming a data variable to something simpler.
+#
+# dsO = xr.open_dataset("../data/data_explorer_1Min/axb/profiler/axb_profiler_doxygen_1Min.nc")
+# dsO = dsO.rename_vars({"moles_of_oxygen_per_unit_mass_in_sea_water_profiler_depth_enabled":"doxygen"})
+# dsO
+
+# This cell formerly loaded selected datasets from the large (multi-year) data pool. This pool is 
+#   external to the repository owing its large volume. This read cell is therefore now deprecated
+#   in favor of subsequent cells that load smaller datasets from within the repository.
+#
+# To keep code compact I use the following table of abbreviations for sensors.
+#   BioOptics includes Fluorometers, the main emphasis here. Fluorometers carry either two or
+#   three sensor types: Chlorophyll-A, Color Dissolved Organic Matter (CDOM), and particulate backscatter. 
+#   The BioOptics ensemble also includes PAR and Spectral Irradiance. PAR measurements are individual
+#   values. Spectral irradiance is seven values per observation. Spectrophotometers are not considered
+#   in this notebook.
+#
+# Dictionary of single-letter sensor keys: The capitalized letter follows 'ds', an abbreviation for
+#   an XArray Dataset. We have therefore: dsA, dsB, dsC, etcetera
+#
+# Desig     Data                     Renamed                 Instrument        Runs during
+# -----     ----                     -------                 ----------        -----------
+# A         Chlorophyll-A            chlora                  fluorometer       continuous
+# B         backscatter              backscatter             fluorometer       continuous
+# C         CDOM                     cdom                    fluorometer       continuous
+# G         pCO2                     pco2                    ?                 midnight/noon descent
+# H         pH                       ph                      pH                midnight/noon descent
+# I         Spectral Irradiance      ?                       spkir             continuous
+# M         Reserved for Nitrate'    ?                       nitrate           midnight/noon ascent
+# N         Nitrate                  ?                       nitrate           midnight/noon ascent
+# P         PAR                      par                     PAR               continuous
+# Q         pressure                 pressure                CTD               continuous
+# O         dissolved oxygen         doxygen                 CTD               continuous
+# S         salinity                 salinity                CTD               continuous
+# T         temperature              temp                    CTD               continuous
+# U         velocity east            veast                   xyz-current       continuous
+# V         velocity north           vnorth                  xyz-current       continuous
+# W         velocity up              vup                     xyz-current       continuous
+#
+# 
+# Shallow profilers begin at rest at a depth of 200 meters. They ascend to within
+#   about 10 meters of the surface, then descend to create a double profile dataset;
+#   whereupon they return to the at-rest state. This cycle repeats nine times per
+#   day. What follows is a simple dictionary of interval designators: The capital letter 
+#   follows the sensor key
+#
+# A     Ascent
+# D     Descent
+# R     Rest
+#
+#
+# There are three RCA shallow profiler sites with names abbreviated herein:
+#
+# osb           Oregon Slope Base
+# axb           Axial Base
+# oos           Oregon Offshore (part of the Endurance array)
+#
+# For more on this see the README.md file and the Notebooks subdirectory.
+
+####################
+####################
+####
+#### IMPORTANT!!!!!!!!!!!
+####
+####    The code below loads data and ***renames*** the data variables to make them easier to work with
+####
+####################
+####################
+
+
+
+.......................................
+
+
+# This cell can be used to glance at data availability for each type of data. It uses a 
+#   very simple plot call to show presence/absence over the history of the cabled array
+#   deployment. Both pCO2 and pH are 'no data' results; and upward velocity looks suspicious.
+#   The other datasets look to be present during the first half of 2021.
+#
+# To recap the relevant part of the single-letter-designator table...
+#
+# Desig     Data                     Renamed                     Instrument
+# -----     ----                     -------                     -----------
+# G         pCO2                     pco2                        ?
+# H         pH                       ph                          pH
+# I         Spectral Irradiance      si412, si443, si490,        spkir
+#                                    si510, si555, si620, si683   
+# N         Nitrate                  nitrate                     nitrate
+# P         PAR                      par                         PAR
+# U         velocity east            veast                       ADCP?
+# V         velocity north           vnorth                      ADCP?
+# W         velocity up              vup                         ADCP?
+
+# un-comment the next line and one of the sensor lines that follow
+# fig, ax = plt.subplots(figsize=(12, 8), tight_layout=True)
+
+# ax.plot(dsG.time, dsG.pco2,     ms = 1., color='blue', mfc='blue')    # no data
+# ax.plot(dsH.time, dsH.ph,       ms = 1., color='blue', mfc='blue')    # no data
+# ax.plot(dsI.time, dsI.si412,    ms = 1., color='blue', mfc='blue')    # good first half of 2021 (max 80)
+# ax.plot(dsI.time, dsI.si443,    ms = 1., color='blue', mfc='blue')    # " 
+# ax.plot(dsI.time, dsI.si490,    ms = 1., color='blue', mfc='blue')    # " 
+# ax.plot(dsI.time, dsI.si510,    ms = 1., color='blue', mfc='blue')    # " 
+# ax.plot(dsI.time, dsI.si555,    ms = 1., color='blue', mfc='blue')    # " 
+# ax.plot(dsI.time, dsI.si620,    ms = 1., color='blue', mfc='blue')    # "  (max down around 15)
+# ax.plot(dsI.time, dsI.si683,    ms = 1., color='blue', mfc='blue')    # "  (max down around 6)
+# ax.plot(dsN.time, dsN.nitrate,  ms = 1., color='blue', mfc='blue')    # " 
+# ax.plot(dsO.time, dsO.doxygen,  ms = 1., color='blue', mfc='blue')    # " 
+# ax.plot(dsP.time, dsP.par,      ms = 1., color='blue', mfc='blue')    # "
+# ax.plot(dsS.time, dsS.salinity, ms = 1., color='blue', mfc='blue')    # "
+# ax.plot(dsT.time, dsT.temp,     ms = 1., color='blue', mfc='blue')    # "
+# ax.plot(dsU.time, dsU.veast,    ms = 1., color='blue', mfc='blue')    # "
+# ax.plot(dsV.time, dsV.vnorth,   ms = 1., color='blue', mfc='blue')    # "
+# ax.plot(dsW.time, dsW.vup,      ms = 1., color='blue', mfc='blue')    # " suspiciously high amplitude in 2021
+
+
+
