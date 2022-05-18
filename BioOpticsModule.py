@@ -11,13 +11,16 @@ this_dir = os.getcwd()
 
 from matplotlib import pyplot as plt
 from matplotlib import colors as mplcolors
+from matplotlib import animation, rc
 import numpy as np, pandas as pd, xarray as xr
 from numpy import datetime64 as dt64, timedelta64 as td64
+
+from IPython.display import HTML, Video
 
 
 ##################
 #
-# parameters
+# parameter configuration
 #
 ##################
 
@@ -52,12 +55,17 @@ vup_lo,         vup_hi           =    -0.4,        0.4
 
 ########################
 #
-# Functions
+# Functions and Configuration
 #
 ########################
 
 
-# convenience functions abbreviating 'datetime64' and so on
+################
+# convenience functions 
+################
+# abbreviating 'datetime64' and so on
+################
+
 def doy(theDatetime): return 1 + int((theDatetime - dt64(str(theDatetime)[0:4] + '-01-01')) / td64(1, 'D'))
 
 
@@ -67,12 +75,61 @@ def dt64_from_doy(year, doy): return dt64(str(year) + '-01-01') + td64(doy-1, 'D
 def day_of_month_to_string(d): return str(d) if d > 9 else '0' + str(d)
 
 
-# Shallow profiler metadata (timestamps for Ascent / Descent / Rest are stored in a set of files in
-#   the Profiles subdirectory. These are read into a Pandas Dataframe in the function given below.
-#
-# Specific to the profile files: We have CSV files with columns corresponding to ascent start, etcetera.
-# This function reads and assorts these time stamps. It keeps them in chronological order but there is
-#   at the moment no further metadata; for example concerning time of day.
+###########
+# Plot function
+###########
+# Customized plot to show profiler behavior over one day
+###########
+
+def ShallowProfilerDepthOneDay(ds, t0str, t1str, title):
+    
+    ds_1day = ds.sel(time=slice(dt64(t0str), dt64(t1str)))
+    
+    fig, axs = plt.subplots(figsize=(12,4), tight_layout=True)
+    
+    axs.plot(ds_1day.time, ds_1day.z, marker='.', ms=9., color='k', mfc='r')
+    
+    axs.set(ylim = (-200., 0.), title=title)
+    axs.text(dt64('2021-02-28 23:15'), -184, 'AT')
+    axs.text(dt64('2021-02-28 23:05'), -193, 'REST')
+    axs.text(dt64('2021-03-01 08'), -180, 'midnight')
+    axs.text(dt64('2021-03-01 21:40'), -180, 'noon')
+    axs.text(dt64('2021-03-01 09:25'), -60, 'slow')
+    axs.text(dt64('2021-03-01 09:30'), -70, 'descent')
+
+    axs.text(dt64('2021-03-01 00:12'), -150, 'A')
+    axs.text(dt64('2021-03-01 00:17'), -135, 'S')
+    axs.text(dt64('2021-03-01 00:22'), -120, 'C')
+    axs.text(dt64('2021-03-01 00:27'), -105, 'E')
+    axs.text(dt64('2021-03-01 00:32'), -90, 'N')
+    axs.text(dt64('2021-03-01 00:37'), -75, 'D')
+    axs.text(dt64('2021-03-01 00:42'), -60, ' I')
+    axs.text(dt64('2021-03-01 00:47'), -45, 'N')
+    axs.text(dt64('2021-03-01 00:52'), -30, 'G')
+
+    axs.text(dt64('2021-03-01 01:50'), -30, 'D')
+    axs.text(dt64('2021-03-01 01:52'), -43, 'E')
+    axs.text(dt64('2021-03-01 01:54'), -56, 'S')
+    axs.text(dt64('2021-03-01 01:56'), -69, 'C')
+    axs.text(dt64('2021-03-01 01:58'), -82, 'E')
+    axs.text(dt64('2021-03-01 02:00'), -95, 'N')
+    axs.text(dt64('2021-03-01 02:02'), -108, 'D')
+    axs.text(dt64('2021-03-01 02:04'), -121, 'I')
+    axs.text(dt64('2021-03-01 02:06'), -134, 'N')
+    axs.text(dt64('2021-03-01 02:08'), -147, 'G')
+
+    plt.show()
+    return
+    
+    
+#################
+# Time series metadata load function
+#################
+# Read in pre-processed profiler metadata for subsequent time-series subsetting.
+# Shallow profiler metadata are timestamps for Ascent / Descent / Rest. These are stored 
+#   as one-year-duration CSV files in the Profiles subfolder; are read into a Pandas 
+#   Dataframe. Columns correspond to ascent start time and so on, as noted in the code.
+#################
 
 def ReadProfileMetadata(fnm):
     """
@@ -94,6 +151,13 @@ def ReadProfileMetadata(fnm):
     return pDf
 
 
+
+
+#######################
+# Time series metadata (index range) function
+#######################
+# Given a time range we want the indices of the profiles within.
+#######################
 def GenerateTimeWindowIndices(pDf, date0, date1, time0, time1):
     '''
     Given two day boundaries and a time window (UTC) within a day: Return a list
@@ -145,6 +209,7 @@ def ProfileEvaluation(t0, t1, pDf):
 
 
 
+
 def GetProfileDataFrameIndicesForSomeTime(site, year, target, window):
     '''
     This is a convenience function that bundles the profile metadata read with the scan for
@@ -175,10 +240,7 @@ def GetDiscreteSummaryCastSubset(dsDf, cast, columns):
 
 
 
-
-
-
-def ChartAB(pDf, xrng, pIdcs, A, Az, Albl, Acolor, B, Bz, Blbl, Bcolor):
+def ChartAB(pDf, xrng, pIdcs, A, Az, Albl, Acolor, B, Bz, Blbl, Bcolor, wid, hgt):
     """
     Make a series of charts comparing two types of sensor data, A and B.
     The data are passed in as DataArrays: A and Az are data and z coordinates respectively.
@@ -194,7 +256,7 @@ def ChartAB(pDf, xrng, pIdcs, A, Az, Albl, Acolor, B, Bz, Blbl, Bcolor):
     print("Attempting", ncharts, "charts\n")
 
     # set up the requested number of charts in a vertical column
-    fig, axs = plt.subplots(ncharts, 1, figsize=(12, 4*ncharts), tight_layout=True)
+    fig, axs = plt.subplots(ncharts, 1, figsize=(wid, hgt*ncharts), tight_layout=True)
 
     # create a list of twin axes, one for each chart
     axstwin0 = [axs[i].twiny() for i in range(ncharts)]
@@ -272,6 +334,10 @@ def ReadOSB_JuneJuly2018_1min():
         xr.open_dataset(data_source + 'current/osb_veast_june_july2018_1min.nc'),      \
         xr.open_dataset(data_source + 'current/osb_vnorth_june_july2018_1min.nc'),     \
         xr.open_dataset(data_source + 'current/osb_vup_june_july2018_1min.nc')
+
+
+
+
 
 def SixSignalChartSequence(df, dsA, dsB, dsC, dsO, dsS, dsT, xrng, chart_indices = [506]):
     """
@@ -364,3 +430,25 @@ def SixSignalChartSequence(df, dsA, dsB, dsC, dsO, dsS, dsT, xrng, chart_indices
         axstwin2[i].text(xrng[5][0]+0.02,  -25, 'FDOM',    color=Ccolor)
         
     return fig, axs  
+
+
+##################
+# more parameter configuration
+##################
+# Load the 2021 Oregon Slope Base profile metadata; and some March 2021 sensor datasets
+##################
+
+# Note these are profile times for Axial Base
+pDf21 = ReadProfileMetadata(os.getcwd()+"/Profiles/osb2021.csv")
+
+# Some code to test out the above ProfileEvaluation() function
+t0, t1 = dt64('2021-01-01'), dt64('2021-02-01')
+nDays = (t1 - t0).astype(int)
+nTotal, nMidn, nNoon = ProfileEvaluation(t0, t1, pDf21)
+
+print("For 2021, month of January, we have...")
+print(nDays, 'days or', nDays*9, 'possible profiles')
+print("There were, over this time, in fact...")
+print(nTotal, 'profiles;', nMidn, 'at local midnight and', nNoon, 'at local noon')
+
+dsA, dsB, dsC, dsT, dsS, dsO, dsH, dsI, dsN, dsP, dsU, dsV, dsW = ReadOSB_March2021_1min()
