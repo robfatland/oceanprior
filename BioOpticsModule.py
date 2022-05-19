@@ -469,8 +469,15 @@ def TemperatureTimeBundleChart(time_index, bundle_size):
         ax.plot(dsTtemp, dsTz, ms = 4., color=color, mfc=color)
     ax.set(title = title)
     ax.set(xlim = (x0, x1), ylim = (y0, y1))
+    ax.text(9.7, -170, str(pDf21["ascent_start"][pIdcs[iProf0]]))
+    if iProf1 - iProf0 > 1:
+        thru_string = str(iProf1 - iProf0) + ' profiles running through'
+        ax.text(9.8, -180, thru_string)
+        ax.text(9.7, -190, str(pDf21["ascent_start"][pIdcs[iProf1-1]]))
     plt.show()
     return
+
+
 
 
 def SalinityTimeBundleChart(time_index, bundle_size):
@@ -494,10 +501,13 @@ def SalinityTimeBundleChart(time_index, bundle_size):
         ax.plot(dsSsalinity, dsSz, ms = 4., color=color, mfc=color)
     ax.set(title = title)
     ax.set(xlim = (x0, x1), ylim = (y0, y1))
+    ax.text(31.5, -170, str(pDf21["ascent_start"][pIdcs[iProf0]]))
+    if iProf1 - iProf0 > 1:
+        thru_string = str(iProf1 - iProf0) + ' profiles running through'
+        ax.text(31.6, -180, thru_string)
+        ax.text(31.5, -190, str(pDf21["ascent_start"][pIdcs[iProf1-1]]))
     plt.show()
     return
-
-
 
 ##################
 # more parameter configuration
