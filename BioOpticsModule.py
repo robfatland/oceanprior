@@ -18,6 +18,7 @@ from numpy import datetime64 as dt64, timedelta64 as td64
 from IPython.display import HTML, Video
 
 
+
 ##################
 #
 # parameter configuration
@@ -430,6 +431,72 @@ def SixSignalChartSequence(df, dsA, dsB, dsC, dsO, dsS, dsT, xrng, chart_indices
         axstwin2[i].text(xrng[5][0]+0.02,  -25, 'FDOM',    color=Ccolor)
         
     return fig, axs  
+
+
+def ChartOneSensor(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0, y1, dsXd, dsXz, title):
+    pIdcs = GenerateTimeWindowIndices(pDf, date0, date1, time0, time1)
+    nProfiles = len(pIdcs)
+    fig, ax = plt.subplots(figsize=(wid, hgt), tight_layout=True)
+    for i in range(nProfiles):
+        pIdx = pIdcs[i]
+        ta0, ta1 = pDf["ascent_start"][pIdx], pDf["ascent_end"][pIdx]
+        dsXx, dsXy = dsXd.sel(time=slice(ta0,  ta1)), dsXz.sel(time=slice(ta0, ta1))
+        ax.plot(dsXx, dsXy, ms = 4., color=color, mfc=color)
+        ax.set(title = title)
+    ax.set(xlim = (x0, x1), ylim = (y0, y1))
+    plt.show()
+    return
+
+
+def TemperatureTimeBundleChart(time_index, bundle_size):
+    global pDf21
+    date0, date1   = dt64_from_doy(2021, 60), dt64_from_doy(2021, 91)
+    time0, time1   = td64(0, 'h'), td64(24, 'h')
+    wid, hgt       = 10, 8
+    color          = 'black'
+    x0, x1, y0, y1 = 7, 11, -200, 0
+    title          = 'Temperature'
+    pIdcs          = GenerateTimeWindowIndices(pDf21, date0, date1, time0, time1)
+    nProfiles      = len(pIdcs)
+    
+    fig, ax = plt.subplots(figsize=(wid, hgt), tight_layout=True)
+    iProf0 = time_index if time_index < nProfiles else nProfiles
+    iProf1 = iProf0 + bundle_size if iProf0 + bundle_size < nProfiles else nProfiles
+    for i in range(iProf0, iProf1):
+        pIdx = pIdcs[i]
+        ta0, ta1 = pDf21["ascent_start"][pIdx], pDf21["ascent_end"][pIdx]
+        dsTtemp, dsTz = dsT.temp.sel(time=slice(ta0,  ta1)), dsT.z.sel(time=slice(ta0, ta1))
+        ax.plot(dsTtemp, dsTz, ms = 4., color=color, mfc=color)
+    ax.set(title = title)
+    ax.set(xlim = (x0, x1), ylim = (y0, y1))
+    plt.show()
+    return
+
+
+def SalinityTimeBundleChart(time_index, bundle_size):
+    global pDf21
+    date0, date1   = dt64_from_doy(2021, 60), dt64_from_doy(2021, 91)
+    time0, time1   = td64(0, 'h'), td64(24, 'h')
+    wid, hgt       = 10, 8
+    color          = 'orange'
+    x0, x1, y0, y1 = 31, 34.2, -200, 0
+    title          = 'Salinity'
+    pIdcs          = GenerateTimeWindowIndices(pDf21, date0, date1, time0, time1)
+    nProfiles      = len(pIdcs)
+    
+    fig, ax = plt.subplots(figsize=(wid, hgt), tight_layout=True)
+    iProf0 = time_index if time_index < nProfiles else nProfiles
+    iProf1 = iProf0 + bundle_size if iProf0 + bundle_size < nProfiles else nProfiles
+    for i in range(iProf0, iProf1):
+        pIdx = pIdcs[i]
+        ta0, ta1 = pDf21["ascent_start"][pIdx], pDf21["ascent_end"][pIdx]
+        dsSsalinity, dsSz = dsS.salinity.sel(time=slice(ta0,  ta1)), dsS.z.sel(time=slice(ta0, ta1))
+        ax.plot(dsSsalinity, dsSz, ms = 4., color=color, mfc=color)
+    ax.set(title = title)
+    ax.set(xlim = (x0, x1), ylim = (y0, y1))
+    plt.show()
+    return
+
 
 
 ##################
