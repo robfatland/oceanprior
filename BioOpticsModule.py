@@ -15,7 +15,10 @@ from matplotlib import animation, rc
 import numpy as np, pandas as pd, xarray as xr
 from numpy import datetime64 as dt64, timedelta64 as td64
 
+from ipywidgets import *
+from traitlets import dlink
 from IPython.display import HTML, Video
+
 
 
 
@@ -41,8 +44,8 @@ nitrate_lo,     nitrate_hi       =     0.,        35.
 do_lo,          do_hi            =    50.0,      300.
 chlora_lo,      chlora_hi        =    -0.1,        1.2
 temp_lo,        temp_hi          =     6.5,       11.
-salinity_lo,    salinity_hi      =    32.0,       35.
-backscatter_lo, backscatter_hi   =     0.0007,     0.0020
+sal_lo,         sal_hi           =    32.0,       35.
+bb_lo,          bb_hi            =     0.0007,     0.0020
 cdom_lo,        cdom_hi          =     0.6,        1.4
 si412_lo,       si412_hi         =     0.0,       80.0
 si443_lo,       si443_hi         =     0.0,       80.0
@@ -54,6 +57,26 @@ si683_lo,       si683_hi         =     0.0,        6.0
 veast_lo,       veast_hi         =    -0.4,        0.4
 vnorth_lo,      vnorth_hi        =    -0.4,        0.4
 vup_lo,         vup_hi           =    -0.4,        0.4
+
+colorT = 'black'
+colorS = 'xkcd:blood orange'
+colorO = 'xkcd:blue'
+colorA = 'xkcd:green'
+colorB = 'xkcd:dark cyan'
+colorC = 'red'
+colorN = 'yellow'
+colorP = 'magenta'
+
+labelT = 'Temperature'
+labelO = 'Oxygen'
+labelS = 'Salinity'
+labelA = 'Chlor-A'
+labelB = 'Backscatter'
+labelC = 'CDOM/FDOM'
+labelN = 'Nitrate'
+labelP = 'PAR'
+
+optionsList = [labelO, labelT, labelS, labelA, labelB, labelC, labelN, labelP]
 
 
 ########################
@@ -368,13 +391,7 @@ def SixSignalChartSequence(df, dsA, dsB, dsC, dsO, dsS, dsT, xrng, chart_indices
     axstwin0 = [axs[i][0].twiny() for i in range(ncharts)]
     axstwin1 = [axs[i][1].twiny() for i in range(ncharts)]
     axstwin2 = [axs[i][2].twiny() for i in range(ncharts)]
-    
-    Tcolor = 'black'
-    Scolor = 'xkcd:blood orange'
-    Ocolor = 'xkcd:blue'
-    Acolor = 'xkcd:green'
-    Bcolor = 'xkcd:dark cyan'
-    Ccolor = 'red'
+
 
     for i in range(ncharts):
 
@@ -390,14 +407,14 @@ def SixSignalChartSequence(df, dsA, dsB, dsC, dsO, dsS, dsT, xrng, chart_indices
         S = dsS.sel(time=slice(ta0,  ta1))
         T = dsT.sel(time=slice(ta0,  ta1))
 
-        axs[i][0].plot(T.temp,        T.z, ms = 4., color=Tcolor, mfc=Tcolor)
-        axstwin0[i].plot(S.salinity,  S.z, ms = 4., color=Scolor, mfc=Scolor)
+        axs[i][0].plot(T.temp,        T.z, ms = 4., color=colorT, mfc=colorT)
+        axstwin0[i].plot(S.salinity,  S.z, ms = 4., color=colorS, mfc=colorS)
 
-        axs[i][1].plot(O.doxygen,     O.z, ms = 4., color=Ocolor, mfc=Ocolor)
-        axstwin1[i].plot(A.chlora,    A.z, ms = 4., color=Acolor, mfc=Acolor)
+        axs[i][1].plot(O.doxygen,     O.z, ms = 4., color=colorO, mfc=colorO)
+        axstwin1[i].plot(A.chlora,    A.z, ms = 4., color=colorA, mfc=colorA)
 
-        axs[i][2].plot(B.backscatter, C.z, ms = 4., color=Bcolor, mfc=Bcolor)
-        axstwin2[i].plot(C.cdom,      C.z, ms = 4., color=Ccolor, mfc=Ccolor)
+        axs[i][2].plot(B.backscatter, C.z, ms = 4., color=colorB, mfc=colorB)
+        axstwin2[i].plot(C.cdom,      C.z, ms = 4., color=colorC, mfc=colorC)
         
         # axis ranges
         if i == 0: 
@@ -422,15 +439,15 @@ def SixSignalChartSequence(df, dsA, dsB, dsC, dsO, dsS, dsT, xrng, chart_indices
 
         axstwin0[i].text(xrng[1][0] + 0.7, -20., ascent_start_time)
         
-        axs[i][0].text(xrng[0][1] - 0.6,   -75, 'Temp',   color=Tcolor)
-        axstwin0[i].text(xrng[1][0] + 0.1, -75, 'Sal',    color=Scolor)
+        axs[i][0].text(xrng[0][1] - 0.6,   -75, 'Temp',   color=colorT)
+        axstwin0[i].text(xrng[1][0] + 0.1, -75, 'Sal',    color=colorS)
 
-        axs[i][1].text(xrng[2][1]-32,      -25, 'DO',      color=Ocolor)
-        axstwin1[i].text(xrng[3][0]+0.05,  -25, 'Chl-A',   color=Acolor)
+        axs[i][1].text(xrng[2][1]-32,      -25, 'DO',      color=colorO)
+        axstwin1[i].text(xrng[3][0]+0.05,  -25, 'Chl-A',   color=colorA)
 
-        axs[i][2].text(xrng[4][1]-0.00020, -50, 'SCATT',   color=Bcolor)
-        axs[i][2].text(xrng[4][1]-0.00022, -60, '(bb700)', color=Bcolor)
-        axstwin2[i].text(xrng[5][0]+0.02,  -25, 'FDOM',    color=Ccolor)
+        axs[i][2].text(xrng[4][1]-0.00020, -50, 'SCATT',   color=colorB)
+        axs[i][2].text(xrng[4][1]-0.00022, -60, '(bb700)', color=colorB)
+        axstwin2[i].text(xrng[5][0]+0.02,  -25, 'FDOM',    color=colorC)
         
     return fig, axs  
 
@@ -440,8 +457,7 @@ def BundleStatic(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0, y
     nProfiles = len(pIdcs)
     fig, ax = plt.subplots(figsize=(wid, hgt), tight_layout=True)
     for i in range(nProfiles):
-        pIdx = pIdcs[i]
-        ta0, ta1 = pDf["ascent_start"][pIdx], pDf["ascent_end"][pIdx]
+        ta0, ta1 = pDf["ascent_start"][pIdcs[i]], pDf["ascent_end"][pIdcs[i]]
         dsXx, dsXy = dsXd.sel(time=slice(ta0,  ta1)), dsXz.sel(time=slice(ta0, ta1))
         ax.plot(dsXx, dsXy, ms = 4., color=color, mfc=color)
         ax.set(title = title)
@@ -450,19 +466,17 @@ def BundleStatic(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0, y
     return
 
 
-# add color on call
-
-def BundleInteract(sensor_choice, time_index, bundle_size):
+def BundleInteract(choice, time_index, bundle_size):
     global pDf21
     
-    if   sensor_choice == 'O': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsO.doxygen, dsO.z, do_lo, do_hi, 'Oxygen', 'blue'
-    elif sensor_choice == 'T': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsT.temp, dsT.z, temp_lo, temp_hi, 'Temperature', 'black'
-    elif sensor_choice == 'S': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsS.salinity, dsS.z, salinity_lo, salinity_hi, 'Salinity', 'orange'
-    elif sensor_choice == 'A': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsA.chlora, dsA.z, chlora_lo, chlora_hi, 'Chlor-A', 'green' 
-    elif sensor_choice == 'B': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsB.backscatter, dsB.z, backscatter_lo, backscatter_hi, 'bb770', 'cyan' 
-    elif sensor_choice == 'C': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsC.cdom, dsC.z, cdom_lo, cdom_hi, 'FDOM', 'red'
-    elif sensor_choice == 'N': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsN.nitrate, dsN.z, nitrate_lo, nitrate_hi, 'Nitrate', 'yellow'
-    elif sensor_choice == 'P': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsP.par, dsP.z, par_lo, par_hi, 'PAR', 'magenta' 
+    if   choice == labelO: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsO.doxygen,     dsO.z, do_lo, do_hi,           labelO, colorO
+    elif choice == labelT: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsT.temp,        dsT.z, temp_lo, temp_hi,       labelT, colorT
+    elif choice == labelS: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsS.salinity,    dsS.z, sal_lo, sal_hi,         labelS, colorS
+    elif choice == labelA: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsA.chlora,      dsA.z, chlora_lo, chlora_hi,   labelA, colorA
+    elif choice == labelB: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsB.backscatter, dsB.z, bb_lo, bb_hi,           labelB, colorB
+    elif choice == labelC: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsC.cdom,        dsC.z, cdom_lo, cdom_hi,       labelC, colorC
+    elif choice == labelN: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsN.nitrate,     dsN.z, nitrate_lo, nitrate_hi, labelN, colorN
+    elif choice == labelP: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsP.par,         dsP.z, par_lo, par_hi,         labelP, colorP
     else: return 0
     
     date0, date1   = dt64_from_doy(2021, 60), dt64_from_doy(2021, 91)
@@ -490,6 +504,28 @@ def BundleInteract(sensor_choice, time_index, bundle_size):
     #     ax.text(9.8, -180, thru_string)
     #     ax.text(9.7, -190, str(pDf21["ascent_start"][pIdcs[iProf1-1]]))
     plt.show()
+    return
+
+def Interactor():
+    '''Set up three bundle-interactive charts, vertically'''
+    
+    interact(BundleInteract, choice = widgets.Dropdown(options=optionsList,  value=labelT, description='sensor'), \
+                             time_index = widgets.IntSlider(min=0, max=270, step=1, value=0,                    \
+                                                            continuous_update=False, description='start'),      \
+                             bundle_size = widgets.IntSlider(min=1, max=80, step=1, value=1,                    \
+                                                            continuous_update=False, description='bundle'))
+
+    interact(BundleInteract, choice = widgets.Dropdown(options=optionsList, value=labelO, description='sensor'), \
+                             time_index = widgets.IntSlider(min=0, max=270, step=1, value=0,                    \
+                                                            continuous_update=False, description='start'),      \
+                             bundle_size = widgets.IntSlider(min=1, max=80, step=1, value=1,                    \
+                                                            continuous_update=False, description='bundle'))
+
+    interact(BundleInteract, choice = widgets.Dropdown(options=optionsList, value=labelS, description='sensor'), \
+                             time_index = widgets.IntSlider(min=0, max=270, step=1, value=0,                    \
+                                                            continuous_update=False, description='start'),      \
+                             bundle_size = widgets.IntSlider(min=1, max=80, step=1, value=1,                    \
+                                                            continuous_update=False, description='bundle'))
     return
 
 
