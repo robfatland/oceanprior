@@ -26,6 +26,8 @@ from IPython.display import HTML, Video
 ##################
 
 # time ranges for midnight and noon profiles, adjusted for UTC
+# midn0 - midn1 is a time range for the midnight profile start
+# noon0 - noon1 is a time range for the noon profile start
 midn0 = td64( 7*60 + 10, 'm')        # 7 hours 10 minutes
 midn1 = td64( 7*60 + 34, 'm')        # 7 hours 34 minutes
 noon0 = td64(20*60 + 30, 'm')        # 20 hours 30 minutes
@@ -34,7 +36,7 @@ noon1 = td64(20*60 + 54, 'm')        # 20 hours 54 minutes
 # global sensor range parameters for charting data: based on osb shallow profiler data
 
 # axis ranges for a variety of sensors
-par_lo,         par_hi           =   -10.0,      300.
+par_lo,         par_hi           =   -10.0,      320.
 nitrate_lo,     nitrate_hi       =     0.,        35.
 do_lo,          do_hi            =    50.0,      300.
 chlora_lo,      chlora_hi        =    -0.1,        1.2
@@ -433,7 +435,7 @@ def SixSignalChartSequence(df, dsA, dsB, dsC, dsO, dsS, dsT, xrng, chart_indices
     return fig, axs  
 
 
-def ChartOneSensor(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0, y1, dsXd, dsXz, title):
+def BundleStatic(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0, y1, dsXd, dsXz, title):
     pIdcs = GenerateTimeWindowIndices(pDf, date0, date1, time0, time1)
     nProfiles = len(pIdcs)
     fig, ax = plt.subplots(figsize=(wid, hgt), tight_layout=True)
@@ -448,14 +450,27 @@ def ChartOneSensor(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0,
     return
 
 
-def TemperatureTimeBundleChart(time_index, bundle_size):
+# add color on call
+
+def BundleInteract(sensor_choice, time_index, bundle_size):
     global pDf21
+    
+    if   sensor_choice == 'O': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsO.doxygen, dsO.z, do_lo, do_hi, 'Oxygen', 'blue'
+    elif sensor_choice == 'T': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsT.temp, dsT.z, temp_lo, temp_hi, 'Temperature', 'black'
+    elif sensor_choice == 'S': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsS.salinity, dsS.z, salinity_lo, salinity_hi, 'Salinity', 'orange'
+    elif sensor_choice == 'A': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsA.chlora, dsA.z, chlora_lo, chlora_hi, 'Chlor-A', 'green' 
+    elif sensor_choice == 'B': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsB.backscatter, dsB.z, backscatter_lo, backscatter_hi, 'bb770', 'cyan' 
+    elif sensor_choice == 'C': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsC.cdom, dsC.z, cdom_lo, cdom_hi, 'FDOM', 'red'
+    elif sensor_choice == 'N': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsN.nitrate, dsN.z, nitrate_lo, nitrate_hi, 'Nitrate', 'yellow'
+    elif sensor_choice == 'P': dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsP.par, dsP.z, par_lo, par_hi, 'PAR', 'magenta' 
+    else: return 0
+    
     date0, date1   = dt64_from_doy(2021, 60), dt64_from_doy(2021, 91)
     time0, time1   = td64(0, 'h'), td64(24, 'h')
-    wid, hgt       = 10, 8
-    color          = 'black'
-    x0, x1, y0, y1 = 7, 11, -200, 0
-    title          = 'Temperature'
+    wid, hgt       = 7, 5
+    x0, x1, y0, y1 = xlo, xhi, -200, 0
+    title          = xtitle
+    color          = xcolor
     pIdcs          = GenerateTimeWindowIndices(pDf21, date0, date1, time0, time1)
     nProfiles      = len(pIdcs)
     
@@ -465,49 +480,18 @@ def TemperatureTimeBundleChart(time_index, bundle_size):
     for i in range(iProf0, iProf1):
         pIdx = pIdcs[i]
         ta0, ta1 = pDf21["ascent_start"][pIdx], pDf21["ascent_end"][pIdx]
-        dsTtemp, dsTz = dsT.temp.sel(time=slice(ta0,  ta1)), dsT.z.sel(time=slice(ta0, ta1))
-        ax.plot(dsTtemp, dsTz, ms = 4., color=color, mfc=color)
+        dsXsensor, dsXdepth = dsXv.sel(time=slice(ta0,  ta1)), dsXz.sel(time=slice(ta0, ta1))
+        ax.plot(dsXsensor, dsXdepth, ms = 4., color=color, mfc=color)
     ax.set(title = title)
     ax.set(xlim = (x0, x1), ylim = (y0, y1))
-    ax.text(9.7, -170, str(pDf21["ascent_start"][pIdcs[iProf0]]))
-    if iProf1 - iProf0 > 1:
-        thru_string = str(iProf1 - iProf0) + ' profiles running through'
-        ax.text(9.8, -180, thru_string)
-        ax.text(9.7, -190, str(pDf21["ascent_start"][pIdcs[iProf1-1]]))
+    # ax.text(9.7, -170, str(pDf21["ascent_start"][pIdcs[iProf0]]))
+    # if iProf1 - iProf0 > 1:
+    #     thru_string = str(iProf1 - iProf0) + ' profiles running through'
+    #     ax.text(9.8, -180, thru_string)
+    #     ax.text(9.7, -190, str(pDf21["ascent_start"][pIdcs[iProf1-1]]))
     plt.show()
     return
 
-
-
-
-def SalinityTimeBundleChart(time_index, bundle_size):
-    global pDf21
-    date0, date1   = dt64_from_doy(2021, 60), dt64_from_doy(2021, 91)
-    time0, time1   = td64(0, 'h'), td64(24, 'h')
-    wid, hgt       = 10, 8
-    color          = 'orange'
-    x0, x1, y0, y1 = 31, 34.2, -200, 0
-    title          = 'Salinity'
-    pIdcs          = GenerateTimeWindowIndices(pDf21, date0, date1, time0, time1)
-    nProfiles      = len(pIdcs)
-    
-    fig, ax = plt.subplots(figsize=(wid, hgt), tight_layout=True)
-    iProf0 = time_index if time_index < nProfiles else nProfiles
-    iProf1 = iProf0 + bundle_size if iProf0 + bundle_size < nProfiles else nProfiles
-    for i in range(iProf0, iProf1):
-        pIdx = pIdcs[i]
-        ta0, ta1 = pDf21["ascent_start"][pIdx], pDf21["ascent_end"][pIdx]
-        dsSsalinity, dsSz = dsS.salinity.sel(time=slice(ta0,  ta1)), dsS.z.sel(time=slice(ta0, ta1))
-        ax.plot(dsSsalinity, dsSz, ms = 4., color=color, mfc=color)
-    ax.set(title = title)
-    ax.set(xlim = (x0, x1), ylim = (y0, y1))
-    ax.text(31.5, -170, str(pDf21["ascent_start"][pIdcs[iProf0]]))
-    if iProf1 - iProf0 > 1:
-        thru_string = str(iProf1 - iProf0) + ' profiles running through'
-        ax.text(31.6, -180, thru_string)
-        ax.text(31.5, -190, str(pDf21["ascent_start"][pIdcs[iProf1-1]]))
-    plt.show()
-    return
 
 ##################
 # more parameter configuration
