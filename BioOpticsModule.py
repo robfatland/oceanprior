@@ -47,6 +47,7 @@ temp_lo,        temp_hi          =     6.5,       11.
 sal_lo,         sal_hi           =    31.5,       34.5
 bb_lo,          bb_hi            =     0.0007,     0.0020
 cdom_lo,        cdom_hi          =     0.6,        1.4
+ph_lo,          ph_hi            =     7.6,        8.2
 si412_lo,       si412_hi         =     0.0,       80.0
 si443_lo,       si443_hi         =     0.0,       80.0
 si490_lo,       si490_hi         =     0.0,       80.0
@@ -64,8 +65,9 @@ colorO = 'xkcd:blue'
 colorA = 'xkcd:green'
 colorB = 'xkcd:dark cyan'
 colorC = 'red'
-colorN = 'yellow'
+colorN = 'xkcd:gold'
 colorP = 'magenta'
+colorH = 'xkcd:purple blue'
 
 labelT = 'Temperature'
 labelO = 'Oxygen'
@@ -75,6 +77,7 @@ labelB = 'Backscatter'
 labelC = 'CDOM/FDOM'
 labelN = 'Nitrate'
 labelP = 'PAR'
+labelH = 'pH'
 
 optionsList = [labelO, labelT, labelS, labelA, labelB, labelC, labelN, labelP]
 
@@ -469,18 +472,17 @@ def BundleStatic(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0, y
 def ShowStaticBundles():
     '''creates six bundle charts for March 2021, Oregon Slope Base'''
     BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
-                   'blue', 80, 300, -200, 0, dsO.doxygen, dsO.z, 'Oxygen')
-
+                   colorO, do_lo, do_hi, -200, 0, dsO.doxygen, dsO.z, 'Oxygen')
     BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
-                   'black', 7, 11, -200, 0, dsT.temp, dsT.z, 'Temperature')
+                   colorT, temp_lo, temp_hi, -200, 0, dsT.temp, dsT.z, 'Temperature')
     BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
-                   'orange', 31, 34.2, -200, 0, dsS.salinity, dsS.z, 'Salinity')
+                   colorS, sal_lo, sal_hi, -200, 0, dsS.salinity, dsS.z, 'Salinity')
     BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
-                   'green', -.06, 1.6, -200, 0, dsA.chlora, dsA.z, 'Chlorophyll')
+                   colorA, chlora_lo, chlora_hi, -200, 0, dsA.chlora, dsA.z, 'Chlorophyll')
     BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
-                   'purple', .0, 1.4, -200, 0, dsC.cdom, dsC.z, 'Fluorescence')
+                   colorC, cdom_lo, cdom_hi, -200, 0, dsC.cdom, dsC.z, 'Fluorescence')
     BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
-                   'cyan', .0005, .0030, -200, 0, dsB.backscatter, dsB.z, 'Particulate Backscatter')
+                   colorB, bb_lo, bb_hi, -200, 0, dsB.backscatter, dsB.z, 'Particulate Backscatter')
     return
     
 
@@ -496,6 +498,7 @@ def BundleInteract(choice, time_index, bundle_size):
     elif choice == labelC: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsC.cdom,        dsC.z, cdom_lo, cdom_hi,       labelC, colorC
     elif choice == labelN: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsN.nitrate,     dsN.z, nitrate_lo, nitrate_hi, labelN, colorN
     elif choice == labelP: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsP.par,         dsP.z, par_lo, par_hi,         labelP, colorP
+    elif choice == labelH: dsXv, dsXz, xlo, xhi, xtitle, xcolor = dsH.ph,          dsH.z, ph_lo, ph_hi,           labelP, colorP
     else: return 0
     
     date0, date1   = dt64_from_doy(2021, 60), dt64_from_doy(2021, 91)
