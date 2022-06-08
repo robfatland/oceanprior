@@ -44,7 +44,7 @@ nitrate_lo,     nitrate_hi       =     0.,        35.
 do_lo,          do_hi            =    50.0,      300.
 chlora_lo,      chlora_hi        =    -0.1,        1.2
 temp_lo,        temp_hi          =     6.5,       11.
-sal_lo,         sal_hi           =    32.0,       35.
+sal_lo,         sal_hi           =    31.5,       34.5
 bb_lo,          bb_hi            =     0.0007,     0.0020
 cdom_lo,        cdom_hi          =     0.6,        1.4
 si412_lo,       si412_hi         =     0.0,       80.0
@@ -466,6 +466,25 @@ def BundleStatic(pDf, date0, date1, time0, time1, wid, hgt, color, x0, x1, y0, y
     return
 
 
+def ShowStaticBundles():
+    '''creates six bundle charts for March 2021, Oregon Slope Base'''
+    BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
+                   'blue', 80, 300, -200, 0, dsO.doxygen, dsO.z, 'Oxygen')
+
+    BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
+                   'black', 7, 11, -200, 0, dsT.temp, dsT.z, 'Temperature')
+    BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
+                   'orange', 31, 34.2, -200, 0, dsS.salinity, dsS.z, 'Salinity')
+    BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
+                   'green', -.06, 1.6, -200, 0, dsA.chlora, dsA.z, 'Chlorophyll')
+    BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
+                   'purple', .0, 1.4, -200, 0, dsC.cdom, dsC.z, 'Fluorescence')
+    BundleStatic(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), td64(0, 'h'), td64(24, 'h'), 5, 4, \
+                   'cyan', .0005, .0030, -200, 0, dsB.backscatter, dsB.z, 'Particulate Backscatter')
+    return
+    
+
+
 def BundleInteract(choice, time_index, bundle_size):
     global pDf21
     
@@ -506,6 +525,8 @@ def BundleInteract(choice, time_index, bundle_size):
     plt.show()
     return
 
+
+
 def Interactor():
     '''Set up three bundle-interactive charts, vertically'''
     
@@ -526,6 +547,32 @@ def Interactor():
                                                             continuous_update=False, description='start'),      \
                              bundle_size = widgets.IntSlider(min=1, max=80, step=1, value=1,                    \
                                                             continuous_update=False, description='bundle'))
+    return
+
+
+def NitrateStaggerChart():
+    '''Another visualization method: like fanning a deck of cards'''
+    pIdcsMidn = GenerateTimeWindowIndices(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), midn0, midn1)   # 30
+    pIdcsNoon = GenerateTimeWindowIndices(pDf21, dt64_from_doy(2021, 60), dt64_from_doy(2021, 91), noon0, noon1)   # 31
+    pIdcs = pIdcsMidn + pIdcsNoon
+    pIdcs.sort()
+    nProfiles = len(pIdcs)
+    print(str(nProfiles) + " profiles (noon/midnight only) in March 2021")
+    profile_shift   = 50
+    nitrate_stretch = 10
+    colorwheel = ['k', 'r', 'y', 'g', 'c', 'b', 'm']
+    cwmod = len(colorwheel)
+    nitrate_lower_bound = 20
+    nitrate_upper_bound = nitrate_lower_bound + (nProfiles - 1)*profile_shift + 250
+    fig, ax = plt.subplots(figsize=(12,7), tight_layout=True)
+    for i in range(len(pIdcs)):
+        ta0, ta1 = pDf21["ascent_start"][pIdcs[i]], pDf21["ascent_end"][pIdcs[i]]
+        Nx, Ny = dsN.nitrate.sel(time=slice(ta0,  ta1)), dsN.z.sel(time=slice(ta0, ta1))
+        ax.plot(nitrate_stretch * Nx + i * profile_shift, Ny, ms = 4., color=colorwheel[i%cwmod] , mfc=colorwheel[i%cwmod])
+    ax.set(xlim = (nitrate_lower_bound, nitrate_upper_bound), \
+           ylim = (-200., 0.),                                \
+           title='staggered nitrate concentration')
+    plt.show()
     return
 
 
